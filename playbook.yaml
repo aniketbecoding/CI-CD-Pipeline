@@ -1,5 +1,5 @@
 - name: Build and deploy docker container
-  hosts: dockerservers    #remote server on which the changes is going to be applied
+  hosts: dockerservers    #remote server on which the changes are going to be applied
   gather_facts: false
   remote_user: root       #we'll perform actions as root user
   tasks:
