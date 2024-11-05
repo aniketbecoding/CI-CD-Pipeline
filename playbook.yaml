@@ -1,0 +1,38 @@
+- name: Build and deploy docker container
+  hosts: dockerservers    #remote server on which the changes is going to be applied
+  gather_facts: false
+  remote_user: root       #we'll perform actions as root user
+  tasks:
+   - name: stopping docker container   # At first we created an image and its container but to see the changes in the website we need to create another container with the latest updates in the website and we can not create another container if one container of an image is already running so we need to stop and remove the container first. Then a new image will be created and from that a new container with the latest updates will be created.
+     docker_container: 
+        name: mico-container
+        image: mico:latest
+        state: stopped
+
+   - name: removing docker container
+     docker_container: 
+        name: mico-container
+        image: mico:latest
+        state: absent
+
+   - name: removing docker image        #this step is optional
+     docker_image: 
+        name: mico:latest
+        state: absent
+
+
+   - name: building docker image      # a new image will be created 
+     docker_image:                    # docker_image is the module here.
+        name: mico:latest             #name of the image that will be created
+        source: build                 #This tells Ansible to build the Docker image from a source directory instead of pulling it from a registry.
+        build:
+            path: ~/project/          #the directory path where Ansible will look for the Dockerfile to build the image. Since it is already mentioned above that hosts are going to be dockerservers, so it will look for "project" directory on the renote server i.e. docker server.
+        state: present
+
+   - name: creating docker container    #this container will have latest updates of the website and will be shown in the website.
+     docker_container: 
+        name: mico-container          #name of the container that'll be created 
+        image: mico:latest            #name of the image from which the container will be created.
+        ports:
+           - "80:80"
+        state: started
